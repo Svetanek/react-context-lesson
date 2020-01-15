@@ -16,14 +16,16 @@ export const CartContext = createContext({
   removeItem: () => {},
   clearItemFromCart: () => {},
   cartItemsCount: 0,
-  total: 0,
+  cartItemsTotal: 0,
 });
 
 const CartProvider = ({ children }) => {
+  const cartItemsFromStorage = () =>
+    JSON.parse(window.localStorage.getItem('cartItems'));
   const [hidden, setHidden] = useState(true);
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(cartItemsFromStorage() || []);
   const [cartItemsCount, setCartItemsCount] = useState(0);
-  const [total, setTotal] = useState(0);
+  const [cartItemsTotal, setCartItemsTotal] = useState(0);
 
   const addItem = item => setCartItems(addItemToCart(cartItems, item));
   const removeItem = item => setCartItems(removeItemFromCart(cartItems, item));
@@ -35,7 +37,14 @@ const CartProvider = ({ children }) => {
     setCartItemsCount(getCartItemsCount(cartItems));
   }, [cartItems]);
   useEffect(() => {
-    setTotal(getCartItemsTotal(cartItems));
+    setCartItemsTotal(getCartItemsTotal(cartItems));
+  }, [cartItems]);
+  useEffect(() => {
+    setCartItemsCount(getCartItemsCount(cartItems));
+
+    setCartItemsTotal(getCartItemsTotal(cartItems));
+    // Every time cart items change update the local storage
+    window.localStorage.setItem('cartItems', JSON.stringify(cartItems));
   }, [cartItems]);
 
   return (
@@ -48,7 +57,7 @@ const CartProvider = ({ children }) => {
         removeItem,
         clearItemFromCart,
         cartItemsCount,
-        total,
+        cartItemsTotal,
       }}
     >
       {children}
